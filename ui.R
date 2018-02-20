@@ -13,7 +13,7 @@ shinyUI(navbarPage(strong("Data Science Capstone Project"),
               fluidPage(
                       fluidRow(
                               column(5, offset = 1,
-                                     h2("Input the first part of phrase/sentense"),
+                                     h2("Input the first part of phrase/sentence"),
                                      tags$textarea(id = "Phrase", rows=5, cols = 30),
                                      submitButton("Predict next word")
                               ),
