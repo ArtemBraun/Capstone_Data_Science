@@ -1,0 +1,109 @@
+
+
+
+Coursera Data Science Capstone Project - Shiny App Presentation
+========================================================
+author: Artem Braun
+date: February 19th, 2018
+transition: rotate
+width: 1920
+height: 1080
+
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+Johns Hopkins Bloomberg School of Public Health  |  Data Science Specialization provided by Coursera  |  SWIFTKEY 
+
+<img src="./www/Logo.png" title="plot of chunk unnamed-chunk-1" alt="plot of chunk unnamed-chunk-1" style="display: block; margin: auto auto auto 0;" />
+
+OVERVIEW
+========================================================
+</br>
+
+This is a slide deck to present web-application and corresponding prediction algorithm developed as part of the final Capstone Project for Data Science Specialization.
+
+Web application was made using R and Shiny framework and could be accessed [**HERE**](https://abraun.shinyapps.io/Words_prediction/) (please, allow 15 sec for App to start).
+
+All source code files are available on my [**GitHub page**](https://github.com/ArtemBraun/Data_Science_Capstone)
+
+The objective of the Capstone Project is to elaborate an application that can predict next word based on a partial sentence or phrase entered by user. This concept is similar to ones used in various mobile keyboard applications. Swiftkey is one of the companies in this industry.
+
+The application uses Natural Language Processing (NLP) techniques to predict the next word. Prediction is based on large training data set. As for real mobile applications, simple prediction on supposably representative dataset is complemented with constantly growing training dataset when user types messages on the phone. I believe, this growing part of dataset should be assigned with considerably more statistical weight than other parts of data. 
+
+
+
+DESCRIPTION OF TRAINING DATA
+========================================================
+<small>
+The dataset used in this project is taken from a corpus called [**HC Corpora**](http://www.corpora.heliohost.org/). Corpus comprises blog posts, news articles, and Twitter tweets in four languages (English, Deutsche, Finnish, and Russian), collected from publicly available sources by a web crawler. These contemporary sources seem to be representative. For this project, we used the English part of corpus.
+
+We are dealing with a huge dataset with 4.2 mln of elements (sentences/blog posts/etc) and more than 100 mln words. Overall dataset size is more than 500Mb. In order to overcome lack of computational resources and minimize prediction time we have to sample data as follows: 
+* 25% of 2 360 148 elements in Twitter dataset 
+* 50% of 899 288 elements in Blogs dataset
+* 100% of 1 010 243 elements in News dataset. 
+
+This sample size is quite representative for prediction quality and prediction is still quite fast. In my opinion, this tradeoff between size, runtime and available RAM is satisfactory for the purpose of this Project. Furthermore, it could be overcome with more advanced hardware. 
+
+To feed the predictive algorithm I constructed matrices of one, two, three and four pairings. In other words, dataset was tokenized, and N-Grams were built. An N-gram is just a group of words that appear in order, with the N value representing how many words are used (Unigram - one word, Bigram - two consecutive words, etc). 
+
+The predictions are based on almost 46 millions of unique N-grams ranging from Unigrams to 4-grams:
+
+|                             |                            |
+|:----------------------------|:---------------------------|
+|Unigrams - 0.52 mln elements |Bigrams - 6.7 mln elements  |
+|Trigrams - 16.5 mln elements |Fourgrams - 22 mln elements |
+All characters in dataset were transformed to lowercase. Redundant white spaces were eliminated, as well as punctuation and numbers. I believe that eliminating of stopwords and hyphens/dashes as well as stemming are detrimental to predicting a regular phrases. That is why I left it as-is. 
+</small>
+
+HOW THE PREDICTIVE MODEL WORKS
+========================================================
+
+N-grams for building the model is used for predicting the next word based on the previous 1, 2, 3 and 4 words tokens.
+
+We used Backoff Algorithm (example for 4-Grams):
+<small>
+- all N-Grams are sorted from highest to lowest frequencies
+- algorithm looks for 4-Gram, which has the first three words that are equal to the last three words of the input phrase (the one we are trying to complete with prediction).
+- if no 4-Gram is found, algorithm backs off to 3-Grams (looks for the first two words amongst TriGrams that are equal to the last two words of input phrase).
+- if no 3-Gram is found, algorithm backs off to BiGram (looks for the first word amongst BiGrams that are equal to the last word of the sentence).
+- if no BiGram is found, algorithm backs off to UniGram (looks for the word with the highest frequency). 
+</small>
+
+To speed up the process of data reading and accessing, we created a dictionary in the form of a named vector. The key of this vector is the index in Unigram table, and the values are corresponding unigrams. This makes sense since it is much faster to find a word by integer than by characters.
+
+Then we map the four N-Grams to data tables with two parts: 
+- the keys of the words in an element (1 key for Unigram, 2 keys for Bigram, 3 keys for Trigram, 4 keys for Fourgrams)
+- the frequency counts of that element.
+
+**In regards to efficiency:**
+This model is driven by the four N-gram matrices which, in its turn, are driven by the sample of original source dataset. Therefore, efficiency of entire prediction process is depended on the size of the sample of training data. 
+
+The accuracy can be fortified by increasing the sample size, but it leads to extended prediction time.
+
+DESCRIPTION OF APPLICATION
+========================================================
+left: 50%
+The application consists of 2 driving files: 
+- ui.R (user Interface);
+- server.R (back end). 
+
+There is also file "Ngrams_creation.R", which prepares and saves output training data in "data" folder. But this is done only once. 
+
+The [**Shiny application**](https://abraun.shinyapps.io/Words_prediction/) has an input text box to enter a partial sentence or phrase, for which the user would like to predict the next word.
+
+Instruction is quite simple:
+- Enter a sentence on the 'Word Prediction' tab;
+- Press the 'Predict next word' button;
+- The most probable 5 words will appear on the right side.
+
+***
+
+Please, allow 15 sec for app to start.
+
+![plot of chunk unnamed-chunk-3](./www/Screenshot.jpg)
